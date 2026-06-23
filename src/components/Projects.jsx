@@ -5,6 +5,15 @@ import './Projects.css'
 
 const projects = [
   {
+    title: 'Arrow Fitness Centre',
+    description: 'A fully deployed modern gym website providing fitness services, facility information, and membership details.',
+    tags: ['Web Development', 'UI/UX', 'Deployed'],
+    gradient: 'linear-gradient(135deg, #f97316, #ea580c)',
+    emoji: '🏋️‍♂️',
+    link: 'https://www.arrowfitnesscentre.com/',
+    featured: true,
+  },
+  {
     title: 'Heart Disease Prediction System',
     description: 'A machine learning system designed to predict the likelihood of heart disease using medical data and PCG audio signals.',
     tags: ['Python', 'Machine Learning', 'Data Science'],
@@ -109,9 +118,16 @@ export default function Projects() {
                   </div>
 
                   <div className="project-links">
-                    <a href={project.github} target="_blank" rel="noopener noreferrer" className="project-link-btn btn-outline" data-cursor>
-                      <FiGithub size={14} /> View Code
-                    </a>
+                    {project.github && (
+                      <a href={project.github} target="_blank" rel="noopener noreferrer" className="project-link-btn btn-outline" data-cursor>
+                        <FiGithub size={14} /> View Code
+                      </a>
+                    )}
+                    {project.link && (
+                      <a href={project.link} target="_blank" rel="noopener noreferrer" className="project-link-btn btn-outline" data-cursor>
+                        <FiExternalLink size={14} /> Live Demo
+                      </a>
+                    )}
                   </div>
                 </div>
               </motion.div>
