@@ -1,232 +1,322 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
-import { FiSend, FiMail, FiMapPin, FiGithub, FiLinkedin, FiCheckCircle } from 'react-icons/fi'
+import { 
+  FiMail, FiSend, FiCopy, FiCheck, FiMapPin, 
+  FiClock, FiExternalLink, FiMessageSquare, FiUser,
+  FiGithub, FiLinkedin
+} from 'react-icons/fi'
 import { SiLeetcode } from 'react-icons/si'
-import sampleImg from '../assets/sample.jpeg'
+import { soundFx } from '../utils/SoundEffects'
 import './Contact.css'
 
-export default function Contact() {
+const promptChips = [
+  '👋 Full-Time Role Opportunity',
+  '🚀 High-Performance Backend Project',
+  '🤖 GenAI / LLM Integration',
+  '☕ Let’s grab a virtual coffee'
+]
+
+export default function Contact({ showToast }) {
   const [ref, inView] = useInView({ threshold: 0.1, triggerOnce: true })
-  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' })
+  const [copied, setCopied] = useState(false)
   const [sending, setSending] = useState(false)
-  const [sent, setSent] = useState(false)
-  const [error, setError] = useState('')
+  const [submitted, setSubmitted] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  })
+
+  const email = 'younustheman@gmail.com'
+
+  const handleCopyEmail = () => {
+    soundFx.playChime()
+    navigator.clipboard.writeText(email)
+    setCopied(true)
+    if (showToast) showToast('Email copied to clipboard! ✓')
+    setTimeout(() => setCopied(false), 2500)
+  }
 
   const handleChange = (e) => {
     setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
-    setError('')
   }
 
-  const handleSubmit = async (e) => {
+  const handleChipClick = (chip) => {
+    soundFx.playClick()
+    setFormData(prev => ({
+      ...prev,
+      subject: chip,
+      message: prev.message ? prev.message : `Hi Younus, I'd love to connect regarding ${chip.replace(/^[^\w]+/, '')}.`
+    }))
+  }
+
+  const handleSubmit = (e) => {
     e.preventDefault()
     if (!formData.name || !formData.email || !formData.message) {
-      setError('Please fill in all required fields.')
+      if (showToast) showToast('Please fill out all required fields')
       return
     }
+
+    soundFx.playClick()
     setSending(true)
-    try {
-      const response = await fetch("https://api.web3forms.com/submit", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify({
-          access_key: import.meta.env.VITE_WEB3FORMS_ACCESS_KEY,
-          name: formData.name,
-          email: formData.email,
-          subject: formData.subject || "New Portfolio Message",
-          message: formData.message,
-        }),
-      });
-      const result = await response.json();
-      if (result.success) {
-        setSent(true)
+
+    // Construct mailto link fallback for instant delivery
+    const mailtoUrl = `mailto:${email}?subject=${encodeURIComponent(formData.subject || 'Portfolio Inquiry')}&body=${encodeURIComponent(
+      `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
+    )}`
+
+    setTimeout(() => {
+      setSending(false)
+      setSubmitted(true)
+      soundFx.playChime()
+      if (showToast) showToast('Message queued! Opening email client...')
+      window.location.href = mailtoUrl
+
+      setTimeout(() => {
+        setSubmitted(false)
         setFormData({ name: '', email: '', subject: '', message: '' })
-      } else {
-        setError("Failed to send message. Please try again.")
-      }
-    } catch (err) {
-      setError("An error occurred. Please try again later.")
-    }
-
-    setSending(false)
-    setTimeout(() => setSent(false), 5000)
+      }, 4000)
+    }, 1200)
   }
-
-  const socials = [
-    { icon: <FiGithub />, label: 'GitHub', href: 'https://github.com/Younus00007' },
-    { icon: <FiLinkedin />, label: 'LinkedIn', href: 'https://www.linkedin.com/in/younuscse/' },
-    { icon: <SiLeetcode />, label: 'LeetCode', href: 'https://leetcode.com/u/Younus07/' },
-    { icon: <FiMail />, label: 'Email', href: 'mailto:younustheman@gmail.com' },
-  ]
 
   return (
     <section id="contact" className="contact-section">
-      <div className="contact-orb-1" />
-      <div className="contact-orb-2" />
+      <div className="contact-ambient-glow" />
+
       <div className="container">
         <motion.div
           ref={ref}
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 35 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.7 }}
         >
-          <div className="section-header" style={{ textAlign: 'center', alignItems: 'center', display: 'flex', flexDirection: 'column' }}>
-            <div className="section-tag">Contact</div>
+          {/* Section Header */}
+          <div className="section-header">
+            <div className="section-tag">Let's Build Together</div>
             <h2 className="section-title">
-              Let's <span className="gradient-text">work together</span>
+              Ready to <span className="gradient-text">scale your mission?</span>
             </h2>
-            <p className="section-subtitle" style={{ textAlign: 'center' }}>
-              Have a project in mind or want to chat? My inbox is always open.
+            <p className="section-subtitle">
+              Whether you have an exciting full-time opportunity, an engineering challenge, 
+              or just want to discuss algorithms and GenAI, my inbox is always open.
             </p>
           </div>
 
-          <div className="contact-grid">
-            {/* Info panel */}
-            <motion.div
-              className="contact-info"
-              initial={{ opacity: 0, x: -40 }}
-              animate={inView ? { opacity: 1, x: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.15 }}
-            >
-              <div 
-                className="info-card glass-card" 
-                style={{ 
-                  padding: 0, 
-                  overflow: 'hidden', 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  justifyContent: 'flex-end',
-                  position: 'relative',
-                  minHeight: '480px',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.4)'
-                }}
-              >
-                {/* Background Image Layer */}
-                <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-                  <img 
-                    src={sampleImg} 
-                    alt="Muhammad Younus A" 
-                    style={{ 
-                      width: '100%', 
-                      height: '100%', 
-                      objectFit: 'cover', 
-                      objectPosition: 'center 8%', 
-                      filter: 'contrast(1.1) brightness(0.9) grayscale(20%)' 
-                    }} 
-                  />
-                  {/* Deep gradient overlay to ensure text is perfectly readable */}
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(15,23,42,1) 0%, rgba(15,23,42,0.85) 35%, transparent 100%)', pointerEvents: 'none' }} />
-                </div>
-                
-                {/* Content Overlay */}
-                <div style={{ padding: '2.5rem 2rem', position: 'relative', zIndex: 1 }}>
-                  <h3 style={{ fontSize: '1.8rem', fontWeight: 'bold', marginBottom: '0.8rem', color: '#fff' }}>Get in touch</h3>
-                  <p style={{ color: 'rgba(255,255,255,0.7)', lineHeight: '1.6', fontSize: '0.95rem', marginBottom: '2.5rem' }}>
-                    I'm currently open to freelance opportunities. If you have an interesting project or just want to say hi, drop me a message!
-                  </p>
-
-                  <div className="contact-details" style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', marginBottom: '2.5rem' }}>
-                    <div className="contact-detail" style={{ color: '#fff' }}>
-                      <FiMail className="detail-icon" style={{ background: 'rgba(255,255,255,0.08)', padding: '10px', borderRadius: '50%', color: 'var(--accent-cyan)', width: '38px', height: '38px' }} />
-                      <span>younustheman@gmail.com</span>
-                    </div>
-                    <div className="contact-detail" style={{ color: '#fff' }}>
-                      <FiMapPin className="detail-icon" style={{ background: 'rgba(255,255,255,0.08)', padding: '10px', borderRadius: '50%', color: 'var(--accent-purple)', width: '38px', height: '38px' }} />
-                      <span>India</span>
-                    </div>
+          <div className="contact-grid-layout">
+            {/* Left Column: Direct Info & Social Cards */}
+            <div className="contact-info-col">
+              {/* Primary Email Card */}
+              <div className="contact-card glass-card spotlight-card" data-cursor>
+                <div className="contact-card-top">
+                  <div className="contact-icon-pill">
+                    <FiMail />
                   </div>
+                  <span className="contact-status-badge">
+                    <span className="contact-status-beacon" /> Quick Response (&lt; 24 hrs)
+                  </span>
+                </div>
 
-                  <div className="contact-socials" style={{ display: 'flex', gap: '0.8rem' }}>
-                    {socials.map(({ icon, label, href }) => (
-                      <a key={label} href={href} target="_blank" rel="noopener noreferrer" 
-                         className="contact-social-link social-link"
-                         style={{ background: 'rgba(255,255,255,0.08)', borderColor: 'rgba(255,255,255,0.1)', color: '#fff' }} 
-                         data-cursor title={label}>
-                        {icon}
-                      </a>
-                    ))}
+                <div className="contact-card-text">
+                  <span className="contact-label">DIRECT INQUIRIES</span>
+                  <h3 className="contact-val">{email}</h3>
+                </div>
+
+                <div className="contact-actions-row">
+                  <button 
+                    className="btn-glow contact-copy-btn" 
+                    onClick={handleCopyEmail}
+                    data-cursor
+                  >
+                    {copied ? <FiCheck size={16} /> : <FiCopy size={16} />}
+                    <span>{copied ? 'Email Copied!' : 'Copy Email Address'}</span>
+                  </button>
+
+                  <a 
+                    href={`mailto:${email}`} 
+                    className="btn-outline contact-mail-btn"
+                    onClick={() => soundFx.playClick()}
+                    data-cursor
+                  >
+                    <FiExternalLink size={15} />
+                    <span>Open Mail Client</span>
+                  </a>
+                </div>
+              </div>
+
+              {/* Location & Availability Widget */}
+              <div className="contact-meta-row">
+                <div className="contact-meta-card glass-card spotlight-card">
+                  <FiMapPin className="meta-icon" />
+                  <div>
+                    <span className="meta-title">Location</span>
+                    <span className="meta-desc">Tamil Nadu, India 🇮🇳</span>
+                  </div>
+                </div>
+
+                <div className="contact-meta-card glass-card spotlight-card">
+                  <FiClock className="meta-icon" />
+                  <div>
+                    <span className="meta-title">Timezone</span>
+                    <span className="meta-desc">IST (UTC +5:30)</span>
                   </div>
                 </div>
               </div>
-            </motion.div>
 
-            {/* Form */}
-            <motion.div
-              initial={{ opacity: 0, x: 40 }}
-              animate={inView ? { opacity: 1, x: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.25 }}
-            >
-              <form className="contact-form glass-card" onSubmit={handleSubmit} noValidate>
-                <div className="form-row">
+              {/* Social Channels Network */}
+              <div className="contact-social-grid">
+                {[
+                  {
+                    name: 'GitHub',
+                    handle: '@Younus00007',
+                    icon: <FiGithub />,
+                    href: 'https://github.com/Younus00007',
+                    accent: '#ffffff'
+                  },
+                  {
+                    name: 'LinkedIn',
+                    handle: 'in/younuscse',
+                    icon: <FiLinkedin />,
+                    href: 'https://www.linkedin.com/in/younuscse/',
+                    accent: '#0a66c2'
+                  },
+                  {
+                    name: 'LeetCode',
+                    handle: '600+ Solved',
+                    icon: <SiLeetcode />,
+                    href: 'https://leetcode.com/u/Younus07/',
+                    accent: '#f59e0b'
+                  }
+                ].map((s) => (
+                  <a
+                    key={s.name}
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="social-net-card glass-card spotlight-card"
+                    onClick={() => soundFx.playClick()}
+                    data-cursor
+                  >
+                    <div className="social-net-icon" style={{ color: s.accent }}>
+                      {s.icon}
+                    </div>
+                    <div className="social-net-info">
+                      <span className="social-net-name">{s.name}</span>
+                      <span className="social-net-handle">{s.handle}</span>
+                    </div>
+                    <FiExternalLink className="social-net-arrow" />
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Column: Interactive Contact Form */}
+            <div className="contact-form-col">
+              <form className="contact-form-card glass-card spotlight-card" onSubmit={handleSubmit}>
+                <div className="form-header">
+                  <h3 className="form-title">Send a Direct Message</h3>
+                  <span className="form-subtitle">Fill out this quick form to initiate contact</span>
+                </div>
+
+                {/* Quick Topic Chips */}
+                <div className="prompt-chips-wrapper">
+                  <span className="chips-label">Quick topics:</span>
+                  <div className="chips-row">
+                    {promptChips.map(chip => (
+                      <button
+                        key={chip}
+                        type="button"
+                        className="prompt-chip"
+                        onClick={() => handleChipClick(chip)}
+                      >
+                        {chip}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Form Fields */}
+                <div className="form-fields-grid">
                   <div className="form-group">
-                    <label htmlFor="name">Name <span className="required">*</span></label>
+                    <label className="form-label" htmlFor="contact-name">Your Name *</label>
                     <input
-                      id="name"
-                      name="name"
+                      id="contact-name"
                       type="text"
+                      name="name"
+                      required
+                      placeholder="e.g. John Doe"
                       value={formData.name}
                       onChange={handleChange}
-                      placeholder="Your name"
                       className="form-input"
                     />
                   </div>
+
                   <div className="form-group">
-                    <label htmlFor="email">Email <span className="required">*</span></label>
+                    <label className="form-label" htmlFor="contact-email">Your Email *</label>
                     <input
-                      id="email"
-                      name="email"
+                      id="contact-email"
                       type="email"
+                      name="email"
+                      required
+                      placeholder="e.g. john@company.com"
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="you@example.com"
                       className="form-input"
+                    />
+                  </div>
+
+                  <div className="form-group full-width">
+                    <label className="form-label" htmlFor="contact-subject">Subject</label>
+                    <input
+                      id="contact-subject"
+                      type="text"
+                      name="subject"
+                      placeholder="e.g. Full-Stack Software Engineer Position"
+                      value={formData.subject}
+                      onChange={handleChange}
+                      className="form-input"
+                    />
+                  </div>
+
+                  <div className="form-group full-width">
+                    <label className="form-label" htmlFor="contact-message">Message *</label>
+                    <textarea
+                      id="contact-message"
+                      name="message"
+                      required
+                      rows={5}
+                      placeholder="Tell me about your project, team, or opportunity..."
+                      value={formData.message}
+                      onChange={handleChange}
+                      className="form-input form-textarea"
                     />
                   </div>
                 </div>
 
-                <div className="form-group">
-                  <label htmlFor="subject">Subject</label>
-                  <input
-                    id="subject"
-                    name="subject"
-                    type="text"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    placeholder="Project inquiry, collaboration..."
-                    className="form-input"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="message">Message <span className="required">*</span></label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    rows={5}
-                    value={formData.message}
-                    onChange={handleChange}
-                    placeholder="Tell me about your project..."
-                    className="form-input form-textarea"
-                  />
-                </div>
-
-                {error && <p className="form-error">{error}</p>}
-
-                <button type="submit" className={`btn-glow submit-btn ${sending ? 'sending' : ''}`} disabled={sending} data-cursor>
-                  {sent ? (
-                    <><FiCheckCircle /> Message Sent!</>
+                {/* Submit Action */}
+                <button
+                  type="submit"
+                  disabled={sending || submitted}
+                  className={`btn-glow form-submit-btn ${submitted ? 'submitted' : ''}`}
+                  data-cursor
+                >
+                  {submitted ? (
+                    <>
+                      <FiCheck size={18} />
+                      <span>Message Dispatched!</span>
+                    </>
                   ) : sending ? (
-                    <><span className="spinner" /> Sending...</>
+                    <span>Sending Transmission...</span>
                   ) : (
-                    <><FiSend /> Send Message</>
+                    <>
+                      <FiSend size={16} />
+                      <span>Transmit Message</span>
+                    </>
                   )}
                 </button>
               </form>
-            </motion.div>
+            </div>
           </div>
         </motion.div>
       </div>

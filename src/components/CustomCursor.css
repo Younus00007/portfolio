@@ -1,3 +1,5 @@
+/* Custom Cursor Styles */
+
 .cursor-canvas {
   position: fixed;
   top: 0;
@@ -5,11 +7,92 @@
   width: 100vw;
   height: 100vh;
   pointer-events: none;
-  z-index: 99999;
+  z-index: 99998;
 }
 
-@media (max-width: 768px) {
-  .cursor-canvas {
-    display: none;
+/* Precision center dot */
+.cursor-dot {
+  position: fixed;
+  top: -3px;
+  left: -3px;
+  width: 6px;
+  height: 6px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 100000;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px var(--accent-cyan);
+  transition: transform 0.05s linear, width 0.2s, height 0.2s, background-color 0.2s;
+  will-change: transform;
+}
+
+.cursor-dot.clicked {
+  transform: scale(0.6);
+  background-color: var(--accent-pink);
+}
+
+/* Fluid outer aura ring */
+.cursor-ring {
+  position: fixed;
+  top: -18px;
+  left: -18px;
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid rgba(168, 85, 247, 0.55);
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.12), transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+              height 0.3s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.3s ease,
+              background-color 0.3s ease,
+              border-radius 0.3s ease;
+  will-change: transform;
+}
+
+.cursor-ring.hovered {
+  top: -26px;
+  left: -26px;
+  width: 52px;
+  height: 52px;
+  border-color: var(--accent-cyan);
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.2), transparent 70%);
+  box-shadow: 0 0 25px rgba(6, 182, 212, 0.35);
+}
+
+.cursor-ring.has-text {
+  top: -32px;
+  left: -32px;
+  width: 64px;
+  height: 64px;
+  background: rgba(14, 20, 42, 0.85);
+  border: 1.5px solid var(--accent-purple);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+}
+
+.cursor-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #ffffff;
+  text-transform: uppercase;
+}
+
+.cursor-ring.clicked {
+  transform: scale(0.85);
+  border-color: var(--accent-pink);
+}
+
+@media (max-width: 768px), (pointer: coarse) {
+  .cursor-canvas,
+  .cursor-dot,
+  .cursor-ring {
+    display: none !important;
   }
 }
